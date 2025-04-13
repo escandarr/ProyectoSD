@@ -9,16 +9,16 @@ async def intercept_georss_response(page):
         if '/api/georss' in response.url:
             try:
                 json_data = await response.json()
-                print("✅ Datos de tráfico capturados:")
+                print("Datos de tráfico capturados:")
                 print(json.dumps(json_data, indent=2, ensure_ascii=False))
                 nonlocal last_data
                 last_data = json_data
             except Exception as e:
-                print(f"❌ Error al procesar JSON de {response.url}: {e}")
+                print(f"Error al procesar JSON de {response.url}: {e}")
 
     page.on("response", handle_response)
 
-    # Esperar para que aparezcan peticiones
+    #Esperar para que aparezcan peticiones
     await asyncio.sleep(10)
     return last_data
 
@@ -47,7 +47,7 @@ async def main():
         if data:
             with open("eventos.json", "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            print("📁 Datos guardados en eventos.json")
+            print("Datos guardados en eventos.json")
 
         await browser.close()
 
