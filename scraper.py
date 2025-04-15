@@ -42,7 +42,7 @@ def guardar_como_jsonl(data):
                 nuevos += 1
                 alerts += 1
 
-    print(f"✅ Agregados {nuevos} nuevos eventos ({jams} jams, {alerts} alerts)")
+    print(f"Agregados {nuevos} nuevos eventos ({jams} jams, {alerts} alerts)")
     return nuevos
 
 async def intercept_georss_response(page):
@@ -112,7 +112,7 @@ async def main():
             print(f"Total acumulado: {total_eventos}/{MAX_EVENTOS}")
 
             if total_eventos < MAX_EVENTOS:
-                print(f"⏳ Esperando {PAUSA_SEGUNDOS} segundos...")
+                print(f"Esperando {PAUSA_SEGUNDOS} segundos...")
                 await asyncio.sleep(PAUSA_SEGUNDOS)
 
     print("10.000 eventos capturados.")
