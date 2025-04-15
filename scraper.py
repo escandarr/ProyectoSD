@@ -87,12 +87,12 @@ async def run_scraper(playwright):
         nuevos = guardar_como_jsonl(data)
         return nuevos
     else:
-        print("⚠️ No se obtuvieron datos esta vez.")
+        print("No se obtuvieron datos esta vez.")
         return 0
 
 async def main():
     total_eventos = contar_eventos_jsonl()
-    print(f"📊 Eventos actuales: {total_eventos}/{MAX_EVENTOS}")
+    print(f"Eventos actuales: {total_eventos}/{MAX_EVENTOS}")
 
     # Inicializar set de eventos ya guardados
     if os.path.exists(EVENTOS_FILE):
@@ -109,12 +109,12 @@ async def main():
         while total_eventos < MAX_EVENTOS:
             nuevos = await run_scraper(playwright)
             total_eventos += nuevos
-            print(f"📈 Total acumulado: {total_eventos}/{MAX_EVENTOS}")
+            print(f"Total acumulado: {total_eventos}/{MAX_EVENTOS}")
 
             if total_eventos < MAX_EVENTOS:
                 print(f"⏳ Esperando {PAUSA_SEGUNDOS} segundos...")
                 await asyncio.sleep(PAUSA_SEGUNDOS)
 
-    print("🎉 ¡Meta alcanzada! 10.000 eventos capturados.")
+    print("10.000 eventos capturados.")
 
 asyncio.run(main())
