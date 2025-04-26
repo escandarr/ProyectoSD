@@ -3,12 +3,9 @@ from playwright.async_api import async_playwright
 import json
 import os
 
-EVENTOS_FILE = "eventos2.jsonl"
+EVENTOS_FILE = "eventos.jsonl"
 MAX_EVENTOS = 10000
-PAUSA_SEGUNDOS = 20
-
-# Set para evitar duplicados en memoria temporal
-eventos_guardados = set()
+PAUSA_SEGUNDOS = 20  # tiempo de espera entre capturas
 
 def contar_eventos_jsonl():
     if not os.path.exists(EVENTOS_FILE):
@@ -16,34 +13,13 @@ def contar_eventos_jsonl():
     with open(EVENTOS_FILE, "r", encoding="utf-8") as f:
         return sum(1 for _ in f)
 
-def generar_id_unico(evento, tipo):
-    # Generamos un ID compuesto por tipo, ciudad, calle y timestamp cercano si existe
-    return f"{tipo}-{evento.get('city', '')}-{evento.get('street', '')}-{evento.get('pubMillis', '')}"
-
 def guardar_como_jsonl(data):
-    nuevos = 0
-    jams = 0
-    alerts = 0
-
     with open(EVENTOS_FILE, "a", encoding="utf-8") as f:
         for jam in data.get("jams", []):
-            eid = generar_id_unico(jam, "jam")
-            if eid not in eventos_guardados:
-                f.write(json.dumps({"type": "jam", **jam}, ensure_ascii=False) + "\n")
-                eventos_guardados.add(eid)
-                nuevos += 1
-                jams += 1
-
+            f.write(json.dumps({"type": "jam", **jam}, ensure_ascii=False) + "\n")
         for alert in data.get("alerts", []):
-            eid = generar_id_unico(alert, "alert")
-            if eid not in eventos_guardados:
-                f.write(json.dumps({"type": "alert", **alert}, ensure_ascii=False) + "\n")
-                eventos_guardados.add(eid)
-                nuevos += 1
-                alerts += 1
-
-    print(f"✅ Agregados {nuevos} nuevos eventos ({jams} jams, {alerts} alerts)")
-    return nuevos
+            f.write(json.dumps({"type": "alert", **alert}, ensure_ascii=False) + "\n")
+    print("✅ Eventos agregados en eventos.jsonl")
 
 async def intercept_georss_response(page):
     last_data = None
@@ -84,35 +60,22 @@ async def run_scraper(playwright):
     await browser.close()
 
     if data:
-        nuevos = guardar_como_jsonl(data)
-        return nuevos
+        guardar_como_jsonl(data)
     else:
         print("⚠️ No se obtuvieron datos esta vez.")
-        return 0
 
 async def main():
     total_eventos = contar_eventos_jsonl()
     print(f"📊 Eventos actuales: {total_eventos}/{MAX_EVENTOS}")
 
-    # Inicializar set de eventos ya guardados
-    if os.path.exists(EVENTOS_FILE):
-        with open(EVENTOS_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                try:
-                    evento = json.loads(line)
-                    eid = generar_id_unico(evento, evento.get("type", ""))
-                    eventos_guardados.add(eid)
-                except:
-                    continue
-
     async with async_playwright() as playwright:
         while total_eventos < MAX_EVENTOS:
-            nuevos = await run_scraper(playwright)
-            total_eventos += nuevos
-            print(f"📈 Total acumulado: {total_eventos}/{MAX_EVENTOS}")
+            await run_scraper(playwright)
+            total_eventos = contar_eventos_jsonl()
+            print(f"📊 Total acumulado: {total_eventos}/{MAX_EVENTOS}")
 
             if total_eventos < MAX_EVENTOS:
-                print(f"⏳ Esperando {PAUSA_SEGUNDOS} segundos...")
+                print(f"⏳ Esperando {PAUSA_SEGUNDOS} segundos antes de la siguiente captura...")
                 await asyncio.sleep(PAUSA_SEGUNDOS)
 
     print("🎉 ¡Meta alcanzada! 10.000 eventos capturados.")
