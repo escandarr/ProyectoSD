@@ -19,7 +19,7 @@ def guardar_como_jsonl(data):
             f.write(json.dumps({"type": "jam", **jam}, ensure_ascii=False) + "\n")
         for alert in data.get("alerts", []):
             f.write(json.dumps({"type": "alert", **alert}, ensure_ascii=False) + "\n")
-    print("✅ Eventos agregados en eventos.jsonl")
+    print("Eventos agregados en eventos.jsonl")
 
 async def intercept_georss_response(page):
     last_data = None
@@ -62,22 +62,22 @@ async def run_scraper(playwright):
     if data:
         guardar_como_jsonl(data)
     else:
-        print("⚠️ No se obtuvieron datos esta vez.")
+        print("No se obtuvieron datos esta vez.")
 
 async def main():
     total_eventos = contar_eventos_jsonl()
-    print(f"📊 Eventos actuales: {total_eventos}/{MAX_EVENTOS}")
+    print(f"Eventos actuales: {total_eventos}/{MAX_EVENTOS}")
 
     async with async_playwright() as playwright:
         while total_eventos < MAX_EVENTOS:
             await run_scraper(playwright)
             total_eventos = contar_eventos_jsonl()
-            print(f"📊 Total acumulado: {total_eventos}/{MAX_EVENTOS}")
+            print(f"Total acumulado: {total_eventos}/{MAX_EVENTOS}")
 
             if total_eventos < MAX_EVENTOS:
-                print(f"⏳ Esperando {PAUSA_SEGUNDOS} segundos antes de la siguiente captura...")
+                print(f"Esperando {PAUSA_SEGUNDOS} segundos antes de la siguiente captura...")
                 await asyncio.sleep(PAUSA_SEGUNDOS)
 
-    print("🎉 ¡Meta alcanzada! 10.000 eventos capturados.")
+    print("10.000 eventos capturados.")
 
 asyncio.run(main())
